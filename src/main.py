@@ -1,19 +1,19 @@
 import csv
 from hash_table import HashTable
 from package import Package
-
+from distance import DistanceTable
 
 def load_packages(file_path, hash_table):
     with open(file_path, newline='') as csvfile:
         reader = csv.reader(csvfile)
 
-        next(reader)  # skip header row
-
         for row in reader:
+            if not row or not row[0].isdigit():
+                continue
+
             package_id = int(row[0])
             address = row[1]
             city = row[2]
-            state = row[3]  # not used, but included
             zip_code = row[4]
             deadline = row[5]
             weight = row[6]
@@ -23,16 +23,25 @@ def load_packages(file_path, hash_table):
 
             hash_table.insert(package_id, package)
 
-
 def main():
     package_table = HashTable()
 
-    load_packages("../data/WGUPS Package File.csv", package_table)
+    load_packages("../data/WGUPS Package File CLEAN 2.csv", package_table)
 
-    # TEST: print all packages
+    # TEST 1: print all packages
     for package in package_table.get_all():
         print(package)
 
+    # TEST 2: Print Look-Up
+    print("\nTEST LOOKUP:")
+    print(package_table.lookup(1))
+
+    # TEST 3:  distance table
+    distance_table = DistanceTable()
+    distance_table.load_data("../data/WGUPS Distance Table CLEAN 2.csv")
+
+    print("\nTEST DISTANCE:")
+    print(distance_table.get_distance("4001 South 700 East", "195 W Oakland Ave"))
 
 if __name__ == "__main__":
     main()
