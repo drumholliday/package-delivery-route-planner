@@ -64,7 +64,7 @@ def deliver_truck(truck, package_table, distance_table):
 def main():
     package_table = HashTable()
 
-    load_packages("../data/WGUPS Package File CLEAN 2.csv", package_table)
+    load_packages("../data/WGUPS Package File Final Edit2.csv", package_table)
 
     # Create Trucks (8.0 represents 8:00 am in decimal time in order to calculate time in mph)
     truck1 = Truck(1, 8.0)
