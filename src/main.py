@@ -2,6 +2,7 @@ import csv
 from hash_table import HashTable
 from package import Package
 from distance import DistanceTable
+from truck import Truck
 
 def load_packages(file_path, hash_table):
     with open(file_path, newline='') as csvfile:
@@ -27,6 +28,40 @@ def main():
     package_table = HashTable()
 
     load_packages("../data/WGUPS Package File CLEAN 2.csv", package_table)
+
+    # Create Trucks
+    truck1 = Truck(1, 8.0)
+    truck2 = Truck (2, 8.0)
+    truck3 = Truck (3, 8.0)
+
+    # Load all packages onto the trucks
+    all_packages = package_table.get_all()
+
+    # If truck one is full (max 16) then put on truck 2 etc..
+    for package in all_packages:
+        if truck1.load_package(package.package_id):
+            # Update the status
+            package.status = "En Route"
+            # Assign the truck number
+            package.truck_id = 1
+            continue
+        elif truck2.load_package(package.package_id):
+            # Update the status
+            package.status = "En Route"
+            # Assign the truck number
+            package.truck_id = 2
+            continue
+        elif truck3.load_package(package.package_id):
+            # Update the status
+            package.status = "En Route"
+            # Assign the truck number
+            package.truck_id = 3
+            continue
+
+    # Print packages in Truck
+    print("\nTRUCK 1 PACKAGES:", truck1.packages)
+    print("TRUCK 2 PACKAGES:", truck2.packages)
+    print("TRUCK 3 PACKAGES:", truck3.packages)
 
     # TEST 1: print all packages
     for package in package_table.get_all():
