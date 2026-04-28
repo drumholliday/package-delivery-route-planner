@@ -14,3 +14,7 @@ class Truck:
             return True
         else:
             return False
+    # Remove a package from the truck after it's delivered and keep track of remaining deliveries.
+    def remove_package(self, package_id):
+        if package_id in self.packages:
+            self.packages.remove(package_id)
