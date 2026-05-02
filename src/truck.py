@@ -1,8 +1,10 @@
 class Truck:
     def __init__(self, truck_id, start_time):
         self.truck_id = truck_id
-        self.packages = []              # list of package IDs
+        # List of package IDs
+        self.packages = []
         self.mileage = 0.0
+        # Hub Address
         self.current_location = "4001 South 700 East"
         self.time = start_time
 

@@ -39,7 +39,7 @@ def deliver_truck(truck, package_table, distance_table):
         closest_package = None
         # Start with a very large distance (inf) = infinity
         closest_distance = float('inf')
-        # Check all packages currently on the truck
+        # Check all valid packages currently on the truck and iterate through remaining packages.
         for package_id in truck.packages:
             package = package_table.lookup(package_id)
 
@@ -77,11 +77,11 @@ def deliver_truck(truck, package_table, distance_table):
             truck.time += 0.01
             continue
 
-        # Move truck to the closest package location
+        # Update location by moving truck to the closest package location
         truck.current_location = closest_package.address
         # Update mileage ny adding distance traveled to total mileage
         truck.mileage += closest_distance
-        # Update time using speed = 18 mph
+        # Update time based on distance (using speed = 18 mph)
         # time = distance / speed
         truck.time += closest_distance / 18
 
@@ -124,7 +124,7 @@ def main():
     # Load package data from CSV into hash table
     load_packages("../data/WGUPS Package File Final Edit2.csv", package_table)
 
-    # Create Trucks   # (8.0 represents 8:00 am in decimal time in order to calculate time in mph)
+    # Create Trucks with assigned packages and set time to 8am in decimal time
     truck1 = Truck(1, 8.0)
     truck2 = Truck(2, 8.0)
     truck3 = Truck(3, 8.0)
@@ -169,7 +169,7 @@ def main():
     distance_table = DistanceTable()
     distance_table.load_data("../data/WGUPS Distance Table CLEAN 2.csv")
 
-    # Deliver packages
+    # Loop through each truck to deliver packages
     deliver_truck(truck1, package_table, distance_table)
     deliver_truck(truck2, package_table, distance_table)
     deliver_truck(truck3, package_table, distance_table)
@@ -199,6 +199,7 @@ def main():
     print(f"Truck 1: {truck1.mileage:.2f}")
     print(f"Truck 2: {truck2.mileage:.2f}")
     print(f"Truck 3: {truck3.mileage:.2f}")
+    # Return total truck mileage
     print(f"Total: {(truck1.mileage + truck2.mileage + truck3.mileage):.2f}")
 
 # Run the program
