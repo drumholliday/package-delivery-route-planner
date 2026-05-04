@@ -72,11 +72,13 @@ def deliver_truck(truck, package_table, distance_table):
 
         # EDGE CASE: No valid package foundIf no valid package was found (all skipped), advance time and retry
         # This happens when all packages are skipped (e.g., delays or rules)
+        # if closest_package is None:
+        #     # Move time forward slightly and try again
+        #     truck.time += 0.01
+        #     continue
         if closest_package is None:
-            # Move time forward slightly and try again
             truck.time += 0.01
             continue
-
         # Update location by moving truck to the closest package location
         truck.current_location = closest_package.address
         # Update mileage ny adding distance traveled to total mileage
@@ -92,6 +94,25 @@ def deliver_truck(truck, package_table, distance_table):
         # Remove package from the truck
         truck.remove_package(closest_package.package_id)
 
+    # FINAL PASS CLEANED UP TO GUARANTEE NOTHING LEFT BEHIND
+    for package_id in list(truck.packages):
+        package = package_table.lookup(package_id)
+
+        distance = distance_table.get_distance(
+            truck.current_location,
+            package.address
+        )
+
+        truck.current_location = package.address
+        truck.mileage += distance
+        truck.time += distance / 18
+
+        package.status = "Delivered"
+        package.delivery_time = truck.time
+
+        truck.remove_package(package.package_id)
+        # END OF WHILE LOOP
+
 # Show the package status at different times
 def check_status_at_time(check_time, package_table):
     # Display the time being checked (in decimal format)
@@ -102,9 +123,18 @@ def check_status_at_time(check_time, package_table):
 
         # Determine package status based on time
 
-        # Before deliveries begin (before 8:00 AM)
-        if check_time < 8.0 or package.truck_id is None:
+        # # Before deliveries begin (before 8:00 AM)
+        # if check_time < 8.0 or package.truck_id is None:
+        #     status = "At Hub"
+
+        # Delayed packages (not at hub until 9:05 AM)
+        if "Delayed" in package.notes and check_time < 9.05:
+            status = "Delayed (Flight)"
+
+        # Before deliveries begin
+        elif check_time < 8.0 or package.truck_id is None:
             status = "At Hub"
+
         # If package has not been delivered yet OR delivery time is in the future
         # If it hasn’t been delivered yet, it must still be in transit so "is None" must mean En Route
         elif package.delivery_time is None or check_time < package.delivery_time:
@@ -127,7 +157,8 @@ def main():
     # Create Trucks with assigned packages and set time to 8am in decimal time
     truck1 = Truck(1, 8.0)
     truck2 = Truck(2, 8.0)
-    truck3 = Truck(3, 8.0)
+    # CHANGE TIME TO 10.2 (10:12) so TRUCKS 1 and 2 RUN FIRST, ONE DRIVER RETURNS THEN 3 STARTS
+    truck3 = Truck(3, 10.2)
 
     # Get all packages from hash table
     all_packages = package_table.get_all()
@@ -135,21 +166,52 @@ def main():
     # Load packages onto trucks
     # If truck one is full (max 16) then put on truck 2 etc.
     # Packages are assigned sequentially
+    # for package in all_packages:
+    #     if truck1.load_package(package.package_id):
+    #         # Update the status of the truck assignment
+    #         package.status = "En Route"
+    #         # Assign the truck number
+    #         package.truck_id = 1
+    #         continue
+    #     elif truck2.load_package(package.package_id):
+    #         package.status = "En Route"
+    #         package.truck_id = 2
+    #         continue
+    #     elif truck3.load_package(package.package_id):
+    #         package.status = "En Route"
+    #         package.truck_id = 3
+    #         continue
+
+    # Required package assignments based on constraints
+    truck1_required = [13, 14, 15, 16, 19, 20]
+    truck2_required = [3, 18, 36, 38]
+
     for package in all_packages:
-        if truck1.load_package(package.package_id):
-            # Update the status of the truck assignment
-            package.status = "En Route"
-            # Assign the truck number
-            package.truck_id = 1
-            continue
-        elif truck2.load_package(package.package_id):
-            package.status = "En Route"
-            package.truck_id = 2
-            continue
-        elif truck3.load_package(package.package_id):
-            package.status = "En Route"
-            package.truck_id = 3
-            continue
+
+        if package.package_id in truck1_required:
+            if truck1.load_package(package.package_id):
+                package.truck_id = 1
+            else:
+                truck3.load_package(package.package_id)
+                package.truck_id = 3
+
+        elif package.package_id in truck2_required:
+            if truck2.load_package(package.package_id):
+                package.truck_id = 2
+            else:
+                truck3.load_package(package.package_id)
+                package.truck_id = 3
+        else:
+            if truck1.load_package(package.package_id):
+                package.truck_id = 1
+            elif truck2.load_package(package.package_id):
+                package.truck_id = 2
+            else:
+                truck3.load_package(package.package_id)
+                package.truck_id = 3
+
+        # Set initial status
+        package.status = "En Route"
 
     # DEBUGGING
     # Print Truck Contents
@@ -169,9 +231,17 @@ def main():
     distance_table = DistanceTable()
     distance_table.load_data("../data/WGUPS Distance Table CLEAN 2.csv")
 
-    # Loop through each truck to deliver packages
+    # # Loop through each truck to deliver packages
+    # deliver_truck(truck1, package_table, distance_table)
+    # deliver_truck(truck2, package_table, distance_table)
+    # deliver_truck(truck3, package_table, distance_table)
+
+    # Deliver first two trucks (2 drivers available)
     deliver_truck(truck1, package_table, distance_table)
     deliver_truck(truck2, package_table, distance_table)
+
+    # Truck 3 starts after one driver becomes available
+    truck3.time = min(truck1.time, truck2.time)
     deliver_truck(truck3, package_table, distance_table)
 
     # STATUS CHECKS

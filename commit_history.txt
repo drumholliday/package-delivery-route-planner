@@ -1,3 +1,4 @@
+08465a5 - Drum Holliday, Fri May 1 22:01:17 2026 :  Updated distance, main, and truck files. Added a README.md, and commit_history
 b790c53 - Drum Holliday, Tue Apr 28 00:26:55 2026 : addded commit history
 2d198f0 - Drum Holliday, Mon Apr 27 23:18:36 2026 : updated main.py handling edge cases and showing the status at different times
 c0eeed8 - Drum Holliday, Mon Apr 27 20:41:07 2026 : modified package.py to add a helper function to correct the time from decimal format.
