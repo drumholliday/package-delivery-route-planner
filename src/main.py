@@ -157,8 +157,7 @@ def main():
     # Create Trucks with assigned packages and set time to 8am in decimal time
     truck1 = Truck(1, 8.0)
     truck2 = Truck(2, 8.0)
-    # CHANGE TIME TO 10.2 (10:12) so TRUCKS 1 and 2 RUN FIRST, ONE DRIVER RETURNS THEN 3 STARTS
-    truck3 = Truck(3, 10.2)
+    truck3 = Truck(3, 8.0)
 
     # Get all packages from hash table
     all_packages = package_table.get_all()
