@@ -1,11 +1,15 @@
-08465a5 - Drum Holliday, Fri May 1 22:01:17 2026 :  Updated distance, main, and truck files. Added a README.md, and commit_history
-b790c53 - Drum Holliday, Tue Apr 28 00:26:55 2026 : addded commit history
-2d198f0 - Drum Holliday, Mon Apr 27 23:18:36 2026 : updated main.py handling edge cases and showing the status at different times
-c0eeed8 - Drum Holliday, Mon Apr 27 20:41:07 2026 : modified package.py to add a helper function to correct the time from decimal format.
-a466276 - Drum Holliday, Mon Apr 27 20:25:57 2026 : Modified the Package file to match the Distance table since an address was spelled differently.
-9cc4138 - Drum Holliday, Mon Apr 27 19:50:05 2026 : Added modified package file
-2558d1f - Drum Holliday, Mon Apr 27 19:20:35 2026 : Added method to truck.py to remove a package from the truck after it is delivered.
-e22485c - Drum Holliday, Mon Apr 27 19:16:41 2026 : Added truck.py and modified main.py to reflect the changes
-81e061f - Drum Holliday, Mon Apr 27 18:47:43 2026 : adding all new code for hash_table and modified main etc...
-3d52ea7 - Drum Holliday, Mon Apr 6 21:34:17 2026 : updated code
-831260f - Drum Holliday, Mon Apr 6 20:56:04 2026 : start of project
+3398a68 | 2026-05-04 | final touches cleaning up main.py
+23e5330 | 2026-05-04 | fixed all issues mention by the evaluator from the first submission, deleted all commented out code and deleted the debugging print statements since they are no longer useful.
+52e7bb8 | 2026-05-04 | Minor change to truck 3 time back to 8am to see if it still worked, it did.
+f247438 | 2026-05-04 | fixed bug not delivering all packages kines 189-211
+08465a5 | 2026-05-01 |  Updated distance, main, and truck files. Added a README.md, and commit_history
+b790c53 | 2026-04-28 | addded commit history
+2d198f0 | 2026-04-27 | updated main.py handling edge cases and showing the status at different times
+c0eeed8 | 2026-04-27 | modified package.py to add a helper function to correct the time from decimal format.
+a466276 | 2026-04-27 | Modified the Package file to match the Distance table since an address was spelled differently.
+9cc4138 | 2026-04-27 | Added modified package file
+2558d1f | 2026-04-27 | Added method to truck.py to remove a package from the truck after it is delivered.
+e22485c | 2026-04-27 | Added truck.py and modified main.py to reflect the changes
+81e061f | 2026-04-27 | adding all new code for hash_table and modified main etc...
+3d52ea7 | 2026-04-06 | updated code
+831260f | 2026-04-06 | start of project

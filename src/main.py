@@ -159,6 +159,21 @@ def check_status_at_time(check_time, package_table, truck3_start_time):
         )
 
 
+# EDITED
+# Added a helper function to convert user input time from HH:MM format into decimal format.
+# Splits the input string into hours and minutes, validates correct format,
+# Converts the values into a single decimal number for time-based comparisons (e.g., 09:30 → 9.5).
+def convert_time_to_decimal(time_str):
+    parts = time_str.split(":")
+    if len(parts) != 2:
+        raise ValueError("Invalid time format")
+
+    hours = int(parts[0])
+    minutes = int(parts[1])
+
+    return hours + minutes / 60
+
+
 # Main program execution
 def main():
     # Create hash table to store all packages
@@ -241,42 +256,41 @@ def main():
     # EDITED Now truck 3 begins deliveries
     deliver_truck(truck3, package_table, distance_table)
 
-    # STATUS CHECKS
-
     # EDITED
-    # D1 - All packages loaded onto each truck at times between 8:35 – 9:25
-    # Delayed package handling and early deliveries
-    check_status_at_time(9.0, package_table, truck3_start_time)
-
-    # EDITED
-    # D2 All packages loaded onto each truck at times between 9:35–10:25
-    # Packages in all states: Delivered, En Route, and Delayed packages now being delivered
-    check_status_at_time(10.0, package_table, truck3_start_time)
-
-    # EDITED
-    # D3 - All packages loaded onto each truck at times between 12:03–1:12)
-    # Truck 3 can't be En Route before it starts
-    # Final delivery completion, Truck 3 operation after driver becomes available
-    check_status_at_time(12.5, package_table, truck3_start_time)
-
-    # EDITED
-    # UI requirement for checking any time
-    user_time = float(input("\nEnter a time: (e.g., 9.0 for 9:00 AM): "))
-    check_status_at_time(user_time, package_table, truck3_start_time)
-
-    # Final Output Delivery Results
-    print("\nFINAL DELIVERY STATUS:")
-
-    for package in package_table.get_all():
-        print(package)
-
-    # Print mileage with rounded decimal
+    # Added print before the UI Loop
+    # Print mileage BEFORE UI loop
     print("\nTOTAL MILEAGE:")
     print(f"Truck 1: {truck1.mileage:.2f}")
     print(f"Truck 2: {truck2.mileage:.2f}")
     print(f"Truck 3: {truck3.mileage:.2f}")
-    # Return total truck mileage
     print(f"Total: {(truck1.mileage + truck2.mileage + truck3.mileage):.2f}")
+
+    # EDITED
+    # Created an interactive UI loop
+    # Prompts the user to enter a time in HH:MM format to check package delivery status
+    # Converts the input to decimal time for internal processing
+    # Validates that the time is within delivery hours (after 8:00 AM).
+    # Calls the status function to display all package information at the requested time.
+    # Allows the user to exit the program by typing 'exit'.
+    # Handles invalid input formats to prevent runtime errors.
+    while True:
+        try:
+            time_input = input("\nEnter time (HH:MM, e.g., 09:00) or 'exit': ")
+
+            if time_input.lower() == "exit":
+                print("Exiting program...")
+                break
+
+            user_time = convert_time_to_decimal(time_input)
+
+            if user_time < 8.0:
+                print("Time must be 08:00 or later (deliveries start at 8:00 AM)")
+                continue
+
+            check_status_at_time(user_time, package_table, truck3_start_time)
+
+        except ValueError:
+            print("Invalid format. Please use HH:MM (e.g., 09:00)")
 
 
 # Run the program
