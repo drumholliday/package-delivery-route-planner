@@ -1,16 +1,18 @@
 # Helper function to format time correctly since it is in decimal time.
 def format_time(decimal_time):
-    hours = int(decimal_time)
-    minutes = int((decimal_time - hours) * 60)
-    # AM/PM
-    period = "AM"
-    if hours >= 12:
-        period = "PM"
-        if hours > 12:
-            hours -= 12
-    if hours == 0:
-        hours = 12
-    return f"{hours}:{minutes:02d} {period}"
+    total_minutes = int(decimal_time * 60 + 0.5)
+
+    hours = total_minutes // 60
+    minutes = total_minutes % 60
+
+    suffix = "AM" if hours < 12 else "PM"
+
+    display_hour = hours % 12
+    if display_hour == 0:
+        display_hour = 12
+
+    return f"{display_hour}:{minutes:02d} {suffix}"
+
 
 # This method defines how a Package object is displayed when printed
 def __str__(self):
@@ -25,10 +27,11 @@ def __str__(self):
         # Display package weight
         f"Weight: {self.weight} | "
         # Display delivery time (formatted if delivered, otherwise None)
-        f"Delivered at: {format_time(self.delivery_time) if self.delivery_time else None} | "
+        f"{format_time(self.delivery_time) if self.delivery_time is not None else 'Not Delivered'}"
         # Display which truck handled the delivery
         f"Truck: {self.truck_id}"
     )
+
 
 # Package class represents each delivery item in the system
 class Package:

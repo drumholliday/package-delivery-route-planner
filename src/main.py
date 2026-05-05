@@ -123,8 +123,8 @@ def deliver_truck(truck, package_table, distance_table):
 # Show the package status at different times
 # EDITED
 def check_status_at_time(check_time, package_table, truck3_start_time):
-    # Display the time being checked (in decimal format)
-    print(f"\nSTATUS AT TIME: {check_time:.2f}\n")
+    # Display the time being checked
+    print(f"\nSTATUS AT TIME: {format_time(check_time)}\n")
 
     # Loop through all packages stored in the hash table
     for package in package_table.get_all():
@@ -161,15 +161,18 @@ def check_status_at_time(check_time, package_table, truck3_start_time):
 
 # EDITED
 # Added a helper function to convert user input time from HH:MM format into decimal format.
-# Splits the input string into hours and minutes, validates correct format,
-# Converts the values into a single decimal number for time-based comparisons (e.g., 09:30 → 9.5).
 def convert_time_to_decimal(time_str):
-    parts = time_str.split(":")
+    parts = time_str.strip().split(":")
+
     if len(parts) != 2:
         raise ValueError("Invalid time format")
 
     hours = int(parts[0])
     minutes = int(parts[1])
+
+    # Convert afternoon inputs like 1:00 → 13:00
+    if hours < 8:
+        hours += 12
 
     return hours + minutes / 60
 
