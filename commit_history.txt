@@ -1,3 +1,4 @@
+d6695af | 2026-05-05 | Finished the UI and tested the output and took screenshots, Updated the README
 3398a68 | 2026-05-04 | final touches cleaning up main.py
 23e5330 | 2026-05-04 | fixed all issues mention by the evaluator from the first submission, deleted all commented out code and deleted the debugging print statements since they are no longer useful.
 52e7bb8 | 2026-05-04 | Minor change to truck 3 time back to 8am to see if it still worked, it did.
