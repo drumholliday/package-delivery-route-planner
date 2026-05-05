@@ -100,7 +100,7 @@ def deliver_truck(truck, package_table, distance_table):
         # Remove package from the truck
         truck.remove_package(closest_package.package_id)
 
-    # FINAL PASS CLEANED UP TO GUARANTEE NOTHING LEFT BEHIND
+    # FINAL PASS Cleaned Up To Guarantee Nothing Is Left Behind
     for package_id in list(truck.packages):
         package = package_table.lookup(package_id)
 
@@ -117,7 +117,7 @@ def deliver_truck(truck, package_table, distance_table):
         package.delivery_time = truck.time
 
         truck.remove_package(package.package_id)
-        # END OF WHILE LOOP
+        # End While Loop
 
 
 # Show the package status at different times
@@ -149,8 +149,14 @@ def check_status_at_time(check_time, package_table, truck3_start_time):
         # If package has already been delivered
         else:
             status = f"Delivered at {format_time(package.delivery_time)}"
-        # Print package ID, status, and assigned truck
-        print(f"Package {package.package_id} | {status} | Truck {package.truck_id}")
+        # Print package ID, address, status, deadline, and truck_id
+        print(
+            f"Package {package.package_id} | "
+            f"{package.address} | "
+            f"{status} | "
+            f"{package.deadline} | "
+            f"Truck {package.truck_id}"
+        )
 
 
 # Main program execution
@@ -252,6 +258,11 @@ def main():
     # Truck 3 can't be En Route before it starts
     # Final delivery completion, Truck 3 operation after driver becomes available
     check_status_at_time(12.5, package_table, truck3_start_time)
+
+    # EDITED
+    # UI requirement for checking any time
+    user_time = float(input("\nEnter a time: (e.g., 9.0 for 9:00 AM): "))
+    check_status_at_time(user_time, package_table, truck3_start_time)
 
     # Final Output Delivery Results
     print("\nFINAL DELIVERY STATUS:")
