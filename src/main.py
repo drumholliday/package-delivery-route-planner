@@ -121,41 +121,60 @@ def deliver_truck(truck, package_table, distance_table):
 
 
 # Show the package status at different times
-# EDITED
+# EDITED 3rd Time
 def check_status_at_time(check_time, package_table, truck3_start_time):
-    # Display the time being checked
     print(f"\nSTATUS AT TIME: {format_time(check_time)}\n")
 
-    # Loop through all packages stored in the hash table
     for package in package_table.get_all():
 
-        # Delayed packages (not at hub until 9:05 AM)
+        # Package 9 address logic
+        if package.package_id == 9:
+            if check_time < 10.33:
+                display_address = "300 State St"
+                # EDITED - After 10:20 AM (10:33) Package 9 should show the correct address
+            else:
+                display_address = "410 S State St"
+        else:
+            display_address = package.address
+
+        # Status logic
+        # EDITED - Ensures Status changes depending on time input Not static output
         if "Delayed" in package.notes and check_time < 9.05:
             status = "Delayed (Flight)"
 
-        # Before deliveries begin
         elif check_time < 8.0 or package.truck_id is None:
             status = "At Hub"
 
-        # If package has not been delivered yet OR delivery time is in the future
-        # If it hasn’t been delivered yet, it must still be in transit so "is None" must mean En Route
-        elif package.delivery_time is None or check_time < package.delivery_time:
-            # EDITED TRUCK 3 should not be En Route Before it Starts
-            # Status = "En Route"
-            if package.truck_id == 3 and check_time < truck3_start_time:
-                status = "At Hub"
-            else:
-                status = "En Route"
-        # If package has already been delivered
-        else:
+        # Truck 3 must stay at hub until it starts
+        elif package.truck_id == 3 and check_time < truck3_start_time:
+            status = "At Hub"
+
+        # Delivered condition (fixes your main bug)
+        # elif package.delivery_time is not None and check_time >= package.delivery_time:
+        # EDITED
+        # Adjust comparison to account for floating-point precision issues when using decimal time.
+        # Ensures packages are marked as delivered at the exact intended delivery time.
+        elif package.delivery_time is not None and check_time >= (package.delivery_time - 0.01):
             status = f"Delivered at {format_time(package.delivery_time)}"
-        # Print package ID, address, status, deadline, and truck_id
+
+        # Otherwise still being delivered
+        else:
+            status = "En Route"
+
+        # print(
+        #     f"Package {package.package_id} | "
+        #     # EDITED - Change package.address to display.address
+        #     f"{display_address} | "
+        #     f"{status} | "
+        #     f"{package.deadline} | "
+        #     f"Truck {package.truck_id}"
+        # )
         print(
             f"Package {package.package_id} | "
-            f"{package.address} | "
-            f"{status} | "
-            f"{package.deadline} | "
-            f"Truck {package.truck_id}"
+            f"Address: {display_address} | "
+            f"Deadline: {package.deadline} | "
+            f"Truck: {package.truck_id} | "
+            f"Status: {status}"
         )
 
 
