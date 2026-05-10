@@ -9,6 +9,13 @@ from hash_table import HashTable
 from package import Package, format_time
 from truck import Truck
 
+# EDITED TO FIX DELIVERY DEADLINE ISSUES
+# Created constants for exact time comparisons (in decimal hours).
+# Prevents floating-point errors and ensures correct handling of
+# delayed packages (9:05 AM) and package #9 address update (10:20 AM).
+NINE_FIVE = 9 + 5 / 60  # 9:05 AM
+TEN_TWENTY = 10 + 20 / 60  # 10:20 AM
+
 
 # Load package data from CSV
 def load_packages(file_path, hash_table):
@@ -36,6 +43,22 @@ def load_packages(file_path, hash_table):
             hash_table.insert(package_id, package)
 
 
+# EDITED TO FIX DELIVERY DEADLINE ISSUES
+# Helper function to convert delivery deadlines into comparable numeric values.
+# This allows the algorithm to prioritize packages with earlier deadlines.
+# "EOD" (end of day) is treated as infinity so it has the lowest priority,
+# and specific times like "9:00 AM" and "10:30 AM" are converted to decimal format.
+# These values are then used in the routing logic to select which package to deliver next.
+def get_deadline_value(deadline):
+    if deadline == "EOD":
+        return float('inf')
+    elif deadline == "9:00 AM":
+        return 9.0
+    elif deadline == "10:30 AM":
+        return 10.5
+    return float('inf')
+
+
 # Deliver packages using Nearest Neighbor Algorithm
 def deliver_truck(truck, package_table, distance_table):
     # Continue until all packages on the truck are delivered
@@ -53,71 +76,67 @@ def deliver_truck(truck, package_table, distance_table):
             # At 10:20 AM (10.33 decimal), the address is corrected
             if package.package_id == 9:
                 # This package cannot be delivered until 10:20 AM
-                if truck.time < 10.33:
+                # if truck.time < 10.33:
+                if truck.time < TEN_TWENTY:
                     # Skip this package for now
                     continue
                 else:
                     # At 10:20 AM, correct the address
                     package.address = "410 S State St"
 
-            # EDITED
-            # CREATE A RULE for Delayed packages (6, 25, 28, 32)
-            # These packages aren't available until 9:05 AM
-            # The truck skips these packages until then
-            if "Delayed" in package.notes:
-                # Skip until package arrives at hub
-                if truck.time < 9.05:
-                    continue
-
+            # EDITED TO FIX DELIVERY DEADLINE ISSUES
+            # # Delayed packages rule
+            # if "Delayed" in package.notes and truck.time < 9.05:
+            #     continue
+            if package.package_id in [6, 25, 28, 32] and truck.time < NINE_FIVE:
+                continue
             # Calculate distance from current location to package address
             distance = distance_table.get_distance(
                 truck.current_location,
                 package.address
             )
-            # Keep track of the closest package
-            if distance < closest_distance:
-                closest_distance = distance
+
+            # EDITED TO FIX THE DELIVERY DEADLINE ISSUES
+            # Convert the package deadline into numeric values
+            # so deadlines can be evaluated during route selection
+            current_deadline = get_deadline_value(package.deadline)
+
+            # If this is the first valid package checked, set it as the current best option
+            if closest_package is None:
                 closest_package = package
+                closest_distance = distance
+            else:
+                # Get the deadline value of the currently selected best package
+                selected_deadline = get_deadline_value(closest_package.deadline)
+
+                # PRIORITY RULE:
+                # Select the package with the earlier deadline (e.g., 9:00 AM before 10:30 AM, before EOD)
+                # This ensures time-sensitive deliveries are handled first
+                if current_deadline < selected_deadline:
+                    closest_package = package
+                    closest_distance = distance
+
+                # If both packages have the same deadline, fall back to nearest neighbor logic
+                # to minimize travel distance and improve efficiency
+                elif current_deadline == selected_deadline:
+                    if distance < closest_distance:
+                        closest_package = package
+                        closest_distance = distance
 
         # If no valid package is available (due to delay rules), advance time slightly
         # This happens when all packages are skipped (e.g., delays or rules)
         if closest_package is None:
             truck.time += 0.01
             continue
-
-        # Update location by moving truck to the closest package location
+        # Deliver package
         truck.current_location = closest_package.address
-        # Update mileage by adding distance traveled to total mileage
         truck.mileage += closest_distance
-        # Update time based on distance (using speed = 18 mph)
-        # time = distance / speed
         truck.time += closest_distance / 18
 
-        # Mark package as delivered
         closest_package.status = "Delivered"
         closest_package.delivery_time = truck.time
 
-        # Remove package from the truck
         truck.remove_package(closest_package.package_id)
-
-    # FINAL PASS Cleaned Up To Guarantee Nothing Is Left Behind
-    for package_id in list(truck.packages):
-        package = package_table.lookup(package_id)
-
-        distance = distance_table.get_distance(
-            truck.current_location,
-            package.address
-        )
-
-        truck.current_location = package.address
-        truck.mileage += distance
-        truck.time += distance / 18
-
-        package.status = "Delivered"
-        package.delivery_time = truck.time
-
-        truck.remove_package(package.package_id)
-        # End While Loop
 
 
 # Show the package status at different times
@@ -138,8 +157,11 @@ def check_status_at_time(check_time, package_table, truck3_start_time):
             display_address = package.address
 
         # Status logic
-        # EDITED - Ensures Status changes depending on time input Not static output
-        if "Delayed" in package.notes and check_time < 9.05:
+        # # EDITED - Ensures Status changes depending on time input Not static output
+        # if "Delayed" in package.notes and check_time < 9.05:
+        #     status = "Delayed (Flight)"
+        # MUST reflect delayed status BEFORE anything else
+        if package.package_id in [6, 25, 28, 32] and check_time < NINE_FIVE:
             status = "Delayed (Flight)"
 
         elif check_time < 8.0 or package.truck_id is None:
@@ -216,11 +238,15 @@ def main():
     # Required Delivery Constraints
     # These packages must be on specific trucks per assignment rules
 
-    # Truck 1 required packages must be delivered together
-    truck1_required = [13, 14, 15, 16, 19, 20]
+    # # Truck 1 required packages must be delivered together
+    # truck1_required = [13, 14, 15, 16, 19, 20]
+    # EDITED TO FIX DELIVERY DEADLINE ISSUES. ADD PACKAGES 20, 30, 31)
+    truck1_required = [13, 14, 15, 16, 19, 20, 30, 31]
 
-    # Truck 2 required packages
-    truck2_required = [3, 18, 36, 38]
+    # # Truck 2 required packages
+    # truck2_required = [3, 18, 36, 38]
+    # EDITED TO FIX DELIVERY DEADLINE ISSUES. ADDED PACKAGE 34 and 37
+    truck2_required = [3, 18, 36, 38, 34, 37]
 
     # EDITED
     # STEP 1 - Load required packages onto truck 1 first
