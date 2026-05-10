@@ -44,11 +44,11 @@ def load_packages(file_path, hash_table):
 
 
 # EDITED TO FIX DELIVERY DEADLINE ISSUES
-# Helper function to convert delivery deadlines into comparable numeric values.
-# This allows the algorithm to prioritize packages with earlier deadlines.
-# "EOD" (end of day) is treated as infinity so it has the lowest priority,
-# and specific times like "9:00 AM" and "10:30 AM" are converted to decimal format.
-# These values are then used in the routing logic to select which package to deliver next.
+# Helper function
+# Convert delivery deadlines into numeric values for comparison during routing.
+# Earlier deadlines are prioritized (e.g., 9:00 AM before 10:30 AM),
+# while "EOD" is treated as infinity so it is selected last.
+# These values are used by the routing algorithm to determine delivery order.
 def get_deadline_value(deadline):
     if deadline == "EOD":
         return float('inf')
@@ -73,10 +73,10 @@ def deliver_truck(truck, package_table, distance_table):
             # EDITED
             # CREATE A RULE for Package #9 which is the wrong address until 10:20 AM
             # It can't be delivered before 10:20 AM
-            # At 10:20 AM (10.33 decimal), the address is corrected
+            # At 10:20 AM the address is corrected
             if package.package_id == 9:
                 # This package cannot be delivered until 10:20 AM
-                # if truck.time < 10.33:
+                # EDIT TO THE CONSTANT CREATED FOR 10:20 AM
                 if truck.time < TEN_TWENTY:
                     # Skip this package for now
                     continue
@@ -85,9 +85,9 @@ def deliver_truck(truck, package_table, distance_table):
                     package.address = "410 S State St"
 
             # EDITED TO FIX DELIVERY DEADLINE ISSUES
-            # # Delayed packages rule
-            # if "Delayed" in package.notes and truck.time < 9.05:
-            #     continue
+            # Enforce delayed package constraint: packages 6, 25, 28, and 32
+            # are not available for delivery until 9:05 AM. Skip them during
+            # route selection until the current truck time reaches that threshold.
             if package.package_id in [6, 25, 28, 32] and truck.time < NINE_FIVE:
                 continue
             # Calculate distance from current location to package address
@@ -105,6 +105,7 @@ def deliver_truck(truck, package_table, distance_table):
             if closest_package is None:
                 closest_package = package
                 closest_distance = distance
+                # EDITED TO FIX DELIVERY DEADLINE ISSUES
             else:
                 # Get the deadline value of the currently selected best package
                 selected_deadline = get_deadline_value(closest_package.deadline)
@@ -148,19 +149,20 @@ def check_status_at_time(check_time, package_table, truck3_start_time):
 
         # Package 9 address logic
         if package.package_id == 9:
-            if check_time < 10.33:
+            # Before 10:20 AM → incorrect address
+            if check_time < TEN_TWENTY:
                 display_address = "300 State St"
-                # EDITED - After 10:20 AM (10:33) Package 9 should show the correct address
+                # EDITED - After 10:20 AM Package 9 should show the correct address
             else:
                 display_address = "410 S State St"
         else:
             display_address = package.address
 
         # Status logic
-        # # EDITED - Ensures Status changes depending on time input Not static output
-        # if "Delayed" in package.notes and check_time < 9.05:
-        #     status = "Delayed (Flight)"
-        # MUST reflect delayed status BEFORE anything else
+        # EDITED
+        # Determine package status based on the requested time.
+        # Delayed packages (6, 25, 28, 32) must be handled first,
+        # since they are not available until 9:05 AM and override all other states.
         if package.package_id in [6, 25, 28, 32] and check_time < NINE_FIVE:
             status = "Delayed (Flight)"
 
@@ -171,8 +173,6 @@ def check_status_at_time(check_time, package_table, truck3_start_time):
         elif package.truck_id == 3 and check_time < truck3_start_time:
             status = "At Hub"
 
-        # Delivered condition (fixes your main bug)
-        # elif package.delivery_time is not None and check_time >= package.delivery_time:
         # EDITED
         # Adjust comparison to account for floating-point precision issues when using decimal time.
         # Ensures packages are marked as delivered at the exact intended delivery time.
@@ -183,14 +183,8 @@ def check_status_at_time(check_time, package_table, truck3_start_time):
         else:
             status = "En Route"
 
-        # print(
-        #     f"Package {package.package_id} | "
-        #     # EDITED - Change package.address to display.address
-        #     f"{display_address} | "
-        #     f"{status} | "
-        #     f"{package.deadline} | "
-        #     f"Truck {package.truck_id}"
-        # )
+        # Display complete package information for the selected time
+        # including package ID, address, deadline, assigned truck, and current delivery status
         print(
             f"Package {package.package_id} | "
             f"Address: {display_address} | "
@@ -211,7 +205,9 @@ def convert_time_to_decimal(time_str):
     hours = int(parts[0])
     minutes = int(parts[1])
 
-    # Convert afternoon inputs like 1:00 → 13:00
+    # Convert afternoon inputs like 1:00 to 13:00
+    # Normalize user input into the delivery time window.
+    # Times before 8 are treated as afternoon (PM), since deliveries occur after 8:00 AM.
     if hours < 8:
         hours += 12
 
@@ -234,18 +230,13 @@ def main():
     # Get all packages from hash table
     all_packages = package_table.get_all()
 
-    # EDITED
-    # Required Delivery Constraints
-    # These packages must be on specific trucks per assignment rules
-
-    # # Truck 1 required packages must be delivered together
-    # truck1_required = [13, 14, 15, 16, 19, 20]
-    # EDITED TO FIX DELIVERY DEADLINE ISSUES. ADD PACKAGES 20, 30, 31)
+    # EDITED TO FIX DELIVERY DEADLINE ISSUES
+    # Pre-assigned truck groupings to satisfy delivery constraints and ensure
+    # efficient routing. These assignments represent one valid configuration
+    # that meets all deadline and delivery requirements.
+    # Truck 1 required packages
     truck1_required = [13, 14, 15, 16, 19, 20, 30, 31]
-
-    # # Truck 2 required packages
-    # truck2_required = [3, 18, 36, 38]
-    # EDITED TO FIX DELIVERY DEADLINE ISSUES. ADDED PACKAGE 34 and 37
+    # Truck 2 required packages
     truck2_required = [3, 18, 36, 38, 34, 37]
 
     # EDITED
