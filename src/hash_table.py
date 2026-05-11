@@ -1,4 +1,3 @@
-
 # Hashtable Class
 class HashTable:
     # Constructor initializes the hash table.
@@ -8,12 +7,14 @@ class HashTable:
         # Create a list of 40 empty lists
         # Each list represents a bucket to handle errors such as multiple keys mapped to same index
         self.table = [[] for _ in range(size)]
+
     # Hash function
     # Converts a key (package ID) into an index within the table
     # Use modulo to keep index within valid range
     def _hash(self, key):
         return key % self.size
-    #Insert Function
+
+    # Insert Function
     # Adds a key value pair (package ID and Package object) to the table
     def insert(self, key, value):
         index = self._hash(key)

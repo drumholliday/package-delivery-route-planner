@@ -26,6 +26,7 @@ and manage package data.
     - Two-driver constraint (Truck 3 starts only after a driver becomes available)
 - Calculates total mileage traveled by all trucks
 - Provides an **interactive user interface** to check package status at any time
+- Prioritizes packages with earlier delivery deadlines during route selection
 
 ---
 

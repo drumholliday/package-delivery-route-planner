@@ -7,13 +7,13 @@ class DistanceTable:
         self.distance_data = []
 
     def load_data(self, file_path):
-        with open(file_path, newline='', encoding='utf-8-sig') as csvfile:
+        with open(file_path, newline="", encoding="utf-8-sig") as csvfile:
             reader = csv.reader(csvfile)
             rows = list(reader)
 
             # Clean and load addresses (skip first blank cell)
             self.addresses = [
-                addr.replace('\n', ' ').replace('"', '').strip()
+                addr.replace("\n", " ").replace('"', "").strip()
                 for addr in rows[0][1:]
                 if addr.strip() != ""
             ]
@@ -23,7 +23,7 @@ class DistanceTable:
                 row_data = []
 
                 for value in row[1:]:
-                    cleaned = value.replace('\n', '').replace('"', '').strip()
+                    cleaned = value.replace("\n", "").replace('"', "").strip()
 
                     if cleaned == "":
                         row_data.append(None)

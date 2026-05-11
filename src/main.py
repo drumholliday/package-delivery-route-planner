@@ -20,7 +20,7 @@ TEN_TWENTY = 10 + 20 / 60  # 10:20 AM
 # Load package data from CSV
 def load_packages(file_path, hash_table):
     # Open the CSV file and read line by line
-    with open(file_path, newline='') as csvfile:
+    with open(file_path, newline="") as csvfile:
         reader = csv.reader(csvfile)
 
         for row in reader:
@@ -37,7 +37,9 @@ def load_packages(file_path, hash_table):
             notes = row[7]
 
             # Create a Package object using extracted data
-            package = Package(package_id, address, city, zip_code, deadline, weight, notes)
+            package = Package(
+                package_id, address, city, zip_code, deadline, weight, notes
+            )
             # Insert package into hash table using package_id as key
             # This allows fast lookup later (O(1) average time)
             hash_table.insert(package_id, package)
@@ -51,12 +53,12 @@ def load_packages(file_path, hash_table):
 # These values are used by the routing algorithm to determine delivery order.
 def get_deadline_value(deadline):
     if deadline == "EOD":
-        return float('inf')
+        return float("inf")
     elif deadline == "9:00 AM":
         return 9.0
     elif deadline == "10:30 AM":
         return 10.5
-    return float('inf')
+    return float("inf")
 
 
 # Deliver packages using Nearest Neighbor Algorithm
@@ -65,7 +67,7 @@ def deliver_truck(truck, package_table, distance_table):
     while truck.packages:
         closest_package = None
         # Start with a very large distance (inf) = infinity
-        closest_distance = float('inf')
+        closest_distance = float("inf")
         # Check all valid packages currently on the truck and iterate through remaining packages.
         for package_id in truck.packages:
             package = package_table.lookup(package_id)
@@ -92,8 +94,7 @@ def deliver_truck(truck, package_table, distance_table):
                 continue
             # Calculate distance from current location to package address
             distance = distance_table.get_distance(
-                truck.current_location,
-                package.address
+                truck.current_location, package.address
             )
 
             # EDITED TO FIX THE DELIVERY DEADLINE ISSUES
@@ -176,7 +177,9 @@ def check_status_at_time(check_time, package_table, truck3_start_time):
         # EDITED
         # Adjust comparison to account for floating-point precision issues when using decimal time.
         # Ensures packages are marked as delivered at the exact intended delivery time.
-        elif package.delivery_time is not None and check_time >= (package.delivery_time - 0.01):
+        elif package.delivery_time is not None and check_time >= (
+            package.delivery_time - 0.01
+        ):
             status = f"Delivered at {format_time(package.delivery_time)}"
 
         # Otherwise still being delivered
